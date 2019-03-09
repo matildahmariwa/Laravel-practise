@@ -13,9 +13,13 @@ class PostController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+    public function __construct()
+    {
+        $this->middleware('auth',['except'=>['index','show']]);
+    }
     public function index()
     {
-         $posts=Post::orderBy('created_at','desc')->paginate(0);
+         $posts=Post::orderBy('created_at','desc')->paginate(100);
         // $posts=DB::select('SELECT * FROM posts');
         return view('posts.index')->with('posts',$posts);
        
@@ -47,6 +51,7 @@ class PostController extends Controller
        $post=new Post;
        $post->title= $request->input('title');
        $post->body= $request->input('body');
+       $post->user_id=auth()->user()->id;
        $post->save();
 
        return redirect("/lsapp/public/posts/")->with('success','Post created successfully');
@@ -73,7 +78,14 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        $post=Post::find($id);
+        if(auth()->user()->id !==$post->user_id){
+            return redirect('/lsapp/public/posts')->with('error','anouthorised page');
+        
+        }
+       
+       
+        return view('posts.edit')->with('post',$post);
     }
 
     /**
@@ -85,7 +97,18 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $this->validate($request,[
+            'title'=>'required',
+            'body'=>'required'
+        ]);
+        //Create Post
+      $post=Post::find($id);
+       $post->title= $request->input('title');
+       $post->body= $request->input('body');
+       $post->user_id=auth()->user()->id;
+       $post->save();
+
+       return redirect("/lsapp/public/posts/")->with('success','Post updated');
     }
 
     /**
@@ -96,6 +119,12 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post=Post::find($id);
+        if(auth()->user()->id !==$post->user_id){
+            return redirect('/lsapp/public/posts')->with('error','anouthorised page');
+        
+        }
+        $post->delete();
+        return redirect("/lsapp/public/posts/")->with('success','Post deleted!');
     }
 }

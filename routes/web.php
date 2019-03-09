@@ -17,9 +17,8 @@ Route::get('/index','PagesController@index');
 Route::get('/services','PagesController@services');
 Route::resource('posts','PostController');
 Route::post('posts','PostController@store')->name('post.store');
+Route::get('/register','RegisterController@register');
 
+Auth::routes();
 
-
-    
-
-
+Route::get('/dashboard', 'DashboardController@index');
